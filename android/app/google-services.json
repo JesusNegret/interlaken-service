@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "350459347996",
+    "project_id": "interlaken-service",
+    "storage_bucket": "interlaken-service.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:350459347996:android:d350b65e5ed19c0343cbd9",
+        "android_client_info": {
+          "package_name": "com.example.interlaken_service"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCHy2aakfMaP8HFsAVW-o2TJihpPPqsoBE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
