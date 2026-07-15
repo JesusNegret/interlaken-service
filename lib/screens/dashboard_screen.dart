@@ -5,6 +5,7 @@ import '../widgets/info_usuario.dart';
 import '../widgets/menu_card.dart';
 import '../screens/clientes/clientes_screen.dart';
 import 'login_screen.dart';
+import 'ordenes/orden_form_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -57,7 +58,14 @@ class DashboardScreen extends StatelessWidget {
             MenuCard(
               icono: Icons.assignment,
               titulo: "Nueva Orden de Servicio",
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const OrdenFormScreen(),
+                  ),
+                );
+              },
             ),
 
             const SizedBox(height: 15),

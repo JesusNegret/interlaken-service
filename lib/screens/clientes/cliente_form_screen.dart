@@ -4,7 +4,12 @@ import '../../models/cliente.dart';
 import '../../services/cliente_service.dart';
 
 class ClienteFormScreen extends StatefulWidget {
-  const ClienteFormScreen({super.key});
+  final Cliente? cliente;
+
+  const ClienteFormScreen({
+    super.key,
+    this.cliente,
+  });
 
   @override
   State<ClienteFormScreen> createState() => _ClienteFormScreenState();
@@ -21,6 +26,22 @@ class _ClienteFormScreenState extends State<ClienteFormScreen> {
   final correoController = TextEditingController();
 
   bool guardando = false;
+
+  bool get esEdicion => widget.cliente != null;
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (esEdicion) {
+      nombreController.text = widget.cliente!.nombre;
+      empresaController.text = widget.cliente!.empresa;
+      sucursalController.text = widget.cliente!.sucursal;
+      direccionController.text = widget.cliente!.direccion;
+      telefonoController.text = widget.cliente!.telefono;
+      correoController.text = widget.cliente!.correo;
+    }
+  }
 
   @override
   void dispose() {
@@ -42,7 +63,7 @@ class _ClienteFormScreenState extends State<ClienteFormScreen> {
       });
 
       final cliente = Cliente(
-        id: '',
+        id: esEdicion ? widget.cliente!.id : '',
         nombre: nombreController.text.trim(),
         empresa: empresaController.text.trim(),
         sucursal: sucursalController.text.trim(),
@@ -51,27 +72,35 @@ class _ClienteFormScreenState extends State<ClienteFormScreen> {
         correo: correoController.text.trim(),
       );
 
-      await ClienteService().agregarCliente(cliente);
+      if (esEdicion) {
+        await ClienteService().actualizarCliente(cliente);
+      } else {
+        await ClienteService().agregarCliente(cliente);
+      }
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Cliente guardado correctamente"),
+        SnackBar(
           backgroundColor: Colors.green,
+          content: Text(
+            esEdicion
+                ? "Cliente actualizado correctamente"
+                : "Cliente guardado correctamente",
+          ),
         ),
       );
 
-      Navigator.pop(context);
+      Navigator.pop(context, true);
     } catch (e) {
-      debugPrint("ERROR FIRESTORE: $e");
+      debugPrint(e.toString());
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: Colors.red,
-          content: Text("Error al guardar:\n$e"),
+          content: Text("Error:\n$e"),
         ),
       );
     } finally {
@@ -106,7 +135,9 @@ class _ClienteFormScreenState extends State<ClienteFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Nuevo Cliente"),
+        title: Text(
+          esEdicion ? "Editar Cliente" : "Nuevo Cliente",
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -128,6 +159,8 @@ class _ClienteFormScreenState extends State<ClienteFormScreen> {
                 label: Text(
                   guardando
                       ? "Guardando..."
+                      : esEdicion
+                      ? "Guardar Cambios"
                       : "Guardar Cliente",
                 ),
                 onPressed: guardando ? null : guardarCliente,

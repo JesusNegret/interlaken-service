@@ -4,8 +4,15 @@ import '../../models/cliente.dart';
 import '../../services/cliente_service.dart';
 import 'cliente_form_screen.dart';
 
-class ClientesScreen extends StatelessWidget {
+class ClientesScreen extends StatefulWidget {
   const ClientesScreen({super.key});
+
+  @override
+  State<ClientesScreen> createState() => _ClientesScreenState();
+}
+
+class _ClientesScreenState extends State<ClientesScreen> {
+  final ClienteService _clienteService = ClienteService();
 
   @override
   Widget build(BuildContext context) {
@@ -13,22 +20,23 @@ class ClientesScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Clientes"),
       ),
-
       floatingActionButton: FloatingActionButton.extended(
         icon: const Icon(Icons.person_add),
         label: const Text("Nuevo Cliente"),
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (_) => const ClienteFormScreen(),
             ),
           );
+
+          if (!mounted) return;
+          setState(() {});
         },
       ),
-
       body: StreamBuilder<List<Cliente>>(
-        stream: ClienteService().obtenerClientes(),
+        stream: _clienteService.obtenerClientes(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -70,12 +78,10 @@ class ClientesScreen extends StatelessWidget {
                     horizontal: 20,
                     vertical: 10,
                   ),
-
                   leading: const CircleAvatar(
                     radius: 25,
                     child: Icon(Icons.person),
                   ),
-
                   title: Text(
                     cliente.nombre,
                     style: const TextStyle(
@@ -83,7 +89,6 @@ class ClientesScreen extends StatelessWidget {
                       fontSize: 18,
                     ),
                   ),
-
                   subtitle: Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Column(
@@ -95,61 +100,62 @@ class ClientesScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-
                   trailing: PopupMenuButton<String>(
                     onSelected: (value) async {
-                      if (value == "editar") {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              "Editar cliente (próximamente)",
+                      switch (value) {
+                        case "editar":
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ClienteFormScreen(
+                                cliente: cliente,
+                              ),
                             ),
-                          ),
-                        );
-                      }
+                          );
 
-                      if (value == "eliminar") {
-                        final eliminar = await showDialog<bool>(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
+                          if (!mounted) return;
+
+                          setState(() {});
+                          break;
+
+                        case "eliminar":
+                          final eliminar = await showDialog<bool>(
+                            context: context,
+                            builder: (_) => AlertDialog(
                               title: const Text("Eliminar cliente"),
                               content: Text(
                                 "¿Desea eliminar a ${cliente.nombre}?",
                               ),
                               actions: [
                                 TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context, false);
-                                  },
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
                                   child: const Text("Cancelar"),
                                 ),
                                 ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.pop(context, true);
-                                  },
+                                  onPressed: () =>
+                                      Navigator.pop(context, true),
                                   child: const Text("Eliminar"),
                                 ),
                               ],
-                            );
-                          },
-                        );
+                            ),
+                          );
 
-                        if (eliminar == true) {
-                          await ClienteService().eliminarCliente(cliente.id);
+                          if (eliminar != true) return;
 
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Cliente eliminado"),
-                              ),
-                            );
-                          }
-                        }
+                          await _clienteService.eliminarCliente(cliente.id);
+
+                          if (!mounted) return;
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Cliente eliminado"),
+                            ),
+                          );
+                          break;
                       }
                     },
-
-                    itemBuilder: (context) => const [
+                    itemBuilder: (_) => const [
                       PopupMenuItem(
                         value: "editar",
                         child: Row(
